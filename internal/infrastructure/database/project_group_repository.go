@@ -2,16 +2,23 @@ package database
 
 import (
 	"task/internal/entity"
-	"task/internal/repository"
 
 	"gorm.io/gorm"
 )
+
+type ProjectGroupRepository interface {
+	AddMember(projectID uint, userID uint, role string) error
+	RemoveMember(projectID uint, userID uint) error
+	GetMembers(projectID uint) ([]*entity.ProjectGroup, error)
+	IsMember(projectID uint, userID uint) (bool, error)
+	IsAdmin(projectID uint, userID uint) (bool, error)
+}
 
 type ProjectGroupRepositoryDB struct {
 	db *gorm.DB
 }
 
-func NewProjectGroupRepositoryDB(db *gorm.DB) repository.ProjectGroupRepository {
+func NewProjectGroupRepositoryDB(db *gorm.DB) ProjectGroupRepository {
 	return &ProjectGroupRepositoryDB{db: db}
 }
 

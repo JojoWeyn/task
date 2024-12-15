@@ -2,16 +2,22 @@ package database
 
 import (
 	"task/internal/entity"
-	"task/internal/repository"
 
 	"gorm.io/gorm"
 )
+
+type UserRepository interface {
+	Create(user *entity.User) error
+	Update(user *entity.User) error
+	FindByEmail(email string) (*entity.User, error)
+	FindByID(id uint) (*entity.User, error)
+}
 
 type UserRepositoryDB struct {
 	db *gorm.DB
 }
 
-func NewUserRepositoryDB(db *gorm.DB) repository.UserRepository {
+func NewUserRepositoryDB(db *gorm.DB) UserRepository {
 	return &UserRepositoryDB{db: db}
 }
 

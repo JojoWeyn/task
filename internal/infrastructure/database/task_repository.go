@@ -2,16 +2,23 @@ package database
 
 import (
 	"task/internal/entity"
-	"task/internal/repository"
 
 	"gorm.io/gorm"
 )
+
+type TaskRepository interface {
+	Create(task *entity.Task) error
+	Update(task *entity.Task) error
+	FindByID(id uint) (*entity.Task, error)
+	ListByProject(projectID uint) ([]*entity.Task, error)
+	Delete(id uint) error
+}
 
 type TaskRepositoryDB struct {
 	db *gorm.DB
 }
 
-func NewTaskRepositoryDB(db *gorm.DB) repository.TaskRepository {
+func NewTaskRepositoryDB(db *gorm.DB) TaskRepository {
 	return &TaskRepositoryDB{db: db}
 }
 
@@ -37,4 +44,8 @@ func (r *TaskRepositoryDB) ListByProject(projectID uint) ([]*entity.Task, error)
 		return nil, err
 	}
 	return tasks, nil
+}
+
+func (r *TaskRepositoryDB) Delete(id uint) error {
+	return r.db.Delete(&entity.Task{}, id).Error
 }
