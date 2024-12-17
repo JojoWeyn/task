@@ -2,16 +2,26 @@ package http
 
 import "github.com/gin-gonic/gin"
 
-func SetupRoutes(router *gin.Engine, authHandler *AuthHandler) {
-	// Public routes
-	router.POST("auth/register", authHandler.Register)
-	router.POST("auth/login", authHandler.Login)
+func AuthRoutes(router *gin.Engine, authHandler *AuthHandler) {
 
-	// Protected routes
-	protected := router.Group("/")
+	authGroup := router.Group("/auth")
+
+	authGroup.POST("/register", authHandler.Register)
+	authGroup.POST("/login", authHandler.Login)
+}
+
+func ProfileRoutes(router *gin.Engine, authHandler *AuthHandler) {
+	protected := router.Group("/profile")
 	protected.Use(AuthMiddleware())
 
-	// Пример защищённого маршрута
-	protected.GET("/profile", authHandler.GetProfile)
+	protected.GET("/", authHandler.GetProfile)
 
+}
+
+func ProjectRoutes(router *gin.Engine, projectHandler *ProjectHandler) {
+	projectGroup := router.Group("/project")
+	projectGroup.Use(AuthMiddleware())
+	projectGroup.POST("/create", projectHandler.CreateProject)
+	projectGroup.GET("/list/", projectHandler.ListByUser)
+	projectGroup.GET("/:id", projectHandler.FindByID)
 }

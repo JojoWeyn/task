@@ -10,22 +10,23 @@ import (
 )
 
 func main() {
-	// Инициализация базы данных
 	database.InitDB()
 	database.AutoMigrate()
-	// Репозитории
+
 	userRepo := database.NewUserRepositoryDB(database.DB)
+	projectRepo := database.NewProjectRepositoryDB(database.DB)
 	refreshTokenRepo := database.NewRefreshTokenRepository(database.DB)
 
-	// Бизнес-логика
 	authUsecase := usecase.NewAuthUsecase(userRepo, refreshTokenRepo)
+	projectUsecase := usecase.NewProjectUsecase(projectRepo)
 
-	// HTTP-обработчики
+	projectHandler := http.NewProjectHandler(*projectUsecase)
 	authHandler := http.NewAuthHandler(*authUsecase)
 
-	// Настройка маршрутов
 	router := gin.Default()
-	http.SetupRoutes(router, authHandler)
+	http.AuthRoutes(router, authHandler)
+	http.ProjectRoutes(router, projectHandler)
+	http.ProfileRoutes(router, authHandler)
 
 	log.Println("Server running on http://localhost:8080")
 	if err := router.Run(":8080"); err != nil {
