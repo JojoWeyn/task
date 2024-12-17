@@ -12,7 +12,7 @@ type UserRepository interface {
 	Update(user *entity.User) error
 	FindByEmail(email string) (*entity.User, error)
 	FindByID(id uint) (*entity.User, error)
-	isExist(email string) (bool, error)
+	isExist(email string) bool
 }
 
 type UserRepositoryDB struct {
@@ -24,13 +24,13 @@ func NewUserRepositoryDB(db *gorm.DB) UserRepository {
 }
 
 func (r *UserRepositoryDB) Create(user *entity.User) error {
-	if exist, err := r.isExist(user.Email); err != nil {
-		return err
-	} else if exist {
+	exist := r.isExist(user.Email)
+	if exist {
 		return errors.New("пользователь с таким email уже существует")
 	} else {
 		return r.db.Create(user).Error
 	}
+
 }
 
 func (r *UserRepositoryDB) Update(user *entity.User) error {
@@ -53,10 +53,10 @@ func (r *UserRepositoryDB) FindByID(id uint) (*entity.User, error) {
 	return &user, nil
 }
 
-func (r *UserRepositoryDB) isExist(email string) (bool, error) {
+func (r *UserRepositoryDB) isExist(email string) bool {
 	var user entity.User
 	if err := r.db.Where("email = ?", email).First(&user).Error; err != nil {
-		return false, err
+		return false
 	}
-	return true, nil
+	return true
 }

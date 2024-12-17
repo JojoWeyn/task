@@ -45,6 +45,34 @@ func (u *AuthUsecase) Register(email, password string) error {
 	return nil
 }
 
+func (u *AuthUsecase) RegisterAsync(email, password string) <-chan error {
+	result := make(chan error)
+
+	go func() {
+		defer close(result)
+		passwordHash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+		if err != nil {
+			result <- err
+			return
+		}
+
+		user := &entity.User{
+			Email:          email,
+			PasswordHash:   string(passwordHash),
+			IsActive:       true,
+			ActivationCode: generateRandomCode(),
+			CreatedAt:      time.Now(),
+		}
+		if err := u.userRepo.Create(user); err != nil {
+			result <- err
+			return
+		}
+		result <- nil
+	}()
+	return result
+
+}
+
 func (u *AuthUsecase) Activate(email, code string) error {
 	user, err := u.userRepo.FindByEmail(email)
 	if err != nil {

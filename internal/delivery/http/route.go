@@ -6,7 +6,7 @@ func AuthRoutes(router *gin.Engine, authHandler *AuthHandler) {
 
 	authGroup := router.Group("/auth")
 
-	authGroup.POST("/register", authHandler.Register)
+	authGroup.POST("/register", authHandler.RegisterAsync)
 	authGroup.POST("/login", authHandler.Login)
 }
 

@@ -16,6 +16,25 @@ func NewAuthHandler(authUsecase usecase.AuthUsecase) *AuthHandler {
 	return &AuthHandler{authUsecase: authUsecase}
 }
 
+func (h *AuthHandler) RegisterAsync(c *gin.Context) {
+	var input struct {
+		Email    string `json:"email", binding:"required"`
+		Password string `json:"password", binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	}
+
+	errChan := h.authUsecase.RegisterAsync(input.Email, input.Password)
+	err := <-errChan
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "success"})
+}
+
 func (h *AuthHandler) Register(c *gin.Context) {
 	var input struct {
 		Email    string `json:"email", binding:"required"`
